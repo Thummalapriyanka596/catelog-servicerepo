@@ -1,0 +1,38 @@
+#version: "3.8"   #file format version
+#services:
+#Groups the containers you want to run.
+#Each service (like db-dev, catalog-service) runs as its own container. So here we are running dev postgres and catalog service
+services:
+  # ----------------- POSTGRES DATABASE -----------------
+  catalog-db:
+    image: postgres:15                    #Uses PostgreSQL version 15 from Docker Hub.
+    container_name: catalog-db        #Names the container for easier reference.
+    environment:                          #Sets up the database with environment variables defined in your .env file.
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:                                 #ports: Maps local port(dev/qa/prod) 5433 → PostgreSQL default port 5432 inside the container. You’ll connect to it using localhost:5433.
+    - "${DB_PORT}:5432"
+    volumes:                                #Stores DB data in a named volume so it persists even after container stops.
+      - pgdata-${SPRING_PROFILES_ACTIVE}:/var/lib/postgresql/data
+
+  # ----------------- SPRING BOOT APP ------------------
+  catalog-service:
+    build: .  #Tells Docker to build the image using the Dockerfile in the current directory (.).
+    container_name: catalog-service           #Gives the Spring Boot container a name.
+    ports:                                    #Maps your app’s port 8081 to local machine’s port 8081.
+     - "${APP_PORT}:${APP_PORT}"
+    environment:                             # Passes environment variables from .env to Spring Boot. Allows your app to switch between dev, qa, and prod easily.
+       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:                                # Ensures db-dev (PostgreSQL) starts before your app.
+         - catalog-db
+    volumes:    # Defines a named volume to store PostgreSQL data, so it survives container restarts.
+      - ./:/app   #These will be automatically picked because of:volumes:  - pgdata-${SPRING_PROFILES_ACTIVE}:/var/lib/postgresql/data
+# ------------ VOLUMES (named for each env) -----------
+volumes:
+  pgdata-dev:     ## Used when SPRING_PROFILES_ACTIVE=dev
+  pgdata-qa:      # Used when SPRING_PROFILES_ACTIVE=qa
+  pgdata-prod:    ## Used when SPRING_PROFILES_ACTIVE=prod

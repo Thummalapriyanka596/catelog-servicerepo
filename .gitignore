@@ -1,0 +1,13 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Maven / Gradle
+target/
+build/
+
+# Logs
+*.log
+
+# Environment files
+.env

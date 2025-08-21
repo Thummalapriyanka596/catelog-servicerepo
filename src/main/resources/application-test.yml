@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/shared-db;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE #✅ Added AUTO_SERVER=TRUE (lets you open /h2-console while tests are running)
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: update  #✅ Kept ddl-auto: update so data stays after tests
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect  #Added database-platform: org.hibernate.dialect.H2Dialect (forces Hibernate to use H2 without DB metadata)
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
