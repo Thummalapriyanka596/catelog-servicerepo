@@ -38,6 +38,7 @@ public class ProductController {
     public ResponseEntity<List<Product>> getAllproducts()
     {
 
+        System.out.println("This line is added for testing the git extentions");
         return new ResponseEntity<>(productService.getAllproducts(),HttpStatus.OK);
     }
 
